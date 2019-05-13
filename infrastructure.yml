@@ -1,0 +1,8 @@
+---
+- hosts: node_swarm
+  roles:
+    - common
+    - docker_swarm
+    #- docker_compose
+    - docker_registry
+    - docker_tickstack

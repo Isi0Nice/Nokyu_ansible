@@ -1,0 +1,16 @@
+version : '3'
+services:
+  registry:
+    image: registry:2
+    deploy:
+      replicas: 3
+    ports:
+      - 5000:5000
+    restart: always
+    volumes:
+      - "/srv/registry:/var/lib/registry:rw"
+#    labels:
+#      - "traefik.enable=true"
+#    - "traefik.port=2368"
+#    - "traefik.entryPoint=http"
+#    - "traefik.frontend.rule=Host:registry"

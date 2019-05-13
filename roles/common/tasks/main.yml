@@ -1,0 +1,32 @@
+---
+
+- name: disable sources list
+  become: true
+  lineinfile:
+        dest=/etc/apt/sources.list
+        regexp='^deb http://ftp.fr.debian.org/debian/ jessie-updates main'
+        line="#deb http://ftp.fr.debian.org/debian/ jessie-updates main"
+        state=absent
+        backup=yes
+
+- name: disable sources list
+  become: true
+  lineinfile:
+        dest=/etc/apt/sources.list
+        regexp='^deb-src http://ftp.fr.debian.org/debian/ jessie-updates main'
+        line="#deb-src http://ftp.fr.debian.org/debian/ jessie-updates main"
+        state=present
+        backup=yes
+
+- name: 'ensure server is up to date'
+  become: true
+  apt:
+           update_cache: yes
+           #upgrade: full
+
+- name: 'install VIM'
+  become: true
+  apt:
+           name: vim
+           update_cache: yes
+           state: latest

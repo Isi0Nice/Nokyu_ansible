@@ -1,0 +1,32 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    deploy:
+      replicas: 3
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+    labels:
+      - traefik.enable=false
+
+  web:
+    build: .
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/myapp
+    ports:
+      - "3000:3000"
+    deploy:
+      replicas: 3
+    depends_on:
+      - db
+    networks:
+      - traefik_network
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_network"
+      - "traefik.port=2368"
+      - "traefik.entryPoint=https"
+      - "traefik.backend=ghost"
+      - "traefik.frontend.rule=Host:traefik.etna.co"

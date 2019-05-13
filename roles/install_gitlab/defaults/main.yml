@@ -1,0 +1,6 @@
+---
+gitlab_repo_url: "https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh"
+temp_dest: "/tmp/gitlab_ee.sh"
+gitlab_pkg: "gitlab-ee"
+external_url: "http://172.16.237.155"
+source_list: "/etc/apt/sources.list.d/gitlab_gitlab-ee.list"

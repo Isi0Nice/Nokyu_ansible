@@ -1,0 +1,40 @@
+---
+############## CREATE REGISTRY ##############
+
+- name: Create Directory to Registry
+  become: true
+  file:
+    name: /srv/registry/
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+  when: "'managers' in group_names"
+
+- name: "copy docker-compose to manager"
+  become: true
+  copy:
+    force: yes
+    src: docker-compose.yml
+    dest: /srv/registry/
+  when: "'managers' in group_names "
+
+- name: "lauch docker-compose"
+  become: true
+  shell: "docker stack deploy -c /srv/registry/docker-compose.yml registry-swarm"
+  when: "'managers' in group_names "
+
+- name: "Copy Daemon.json To Manager"
+  become: true
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+
+- name: "Reload Docker"
+  become: true
+  service:
+    name: docker
+    state: reloaded
+
+
+###############################################

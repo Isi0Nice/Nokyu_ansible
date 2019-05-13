@@ -1,0 +1,46 @@
+debug = true
+logLevel = "INFO"
+
+[traefikLog]
+  filePath = "/var/log/traefik.log"
+  format   = "json"
+
+[accessLog]
+  filePath = "/var/log/access.log"
+  format = "json"
+
+defaultEntryPoints = ["https", "http"]
+[entryPoints]
+[entryPoints.traefik]
+  address = ":8080"
+  [entryPoints.traefik.auth]
+    [entryPoints.traefik.auth.basic]
+      users = ["admin:$apr1$/.PpCBXS$3eSNUdNY.i.0PJpnqXMYA."]
+[entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+      entryPoint = "https"
+[entryPoints.https]
+  address = ":443"
+    [entryPoints.https.tls]
+
+[api]
+entryPoint="traefik"
+dashboard = true
+debug = true
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "172.16.237.52"
+watch = true
+swarmmode = true
+exposedbydefault = false
+network = "traefik_network"
+
+[acme]
+email = "legore_r@etna-alternance.net"
+storage = "acme.json"
+entryPoint = "https"
+onHostRule = true
+[acme.httpChallenge]
+  entryPoint = "http"

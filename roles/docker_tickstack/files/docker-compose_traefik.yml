@@ -1,0 +1,31 @@
+version: '3.2'
+services:
+    traefik:
+        image: 172.16.237.52:5000/mytraefik # The official Traefik docker image
+        deploy:
+          replicas: 1
+          placement:
+            constraints: [node.role == manager]
+
+        restart: always
+        command: --api --docker --web --logLevel=INFO
+        ports:
+            #- "80:80"     # The HTTP port
+            - "443:443"   # The HTTPS port
+            - "8080:8080"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./conf/traefik.toml:/traefik.toml
+            - ./conf/acme.json:/acme.json
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=traefik_network"
+            - "traefik.port=8080"
+            - "traefik.entryPoint=https"
+            - "traefik.backend=traefik"
+            - "traefik.frontend.rule=Host:traefik.etna.co"
+        #networks:
+        #    - traefik_network
+networks:
+    traefik_network:
+        external: true

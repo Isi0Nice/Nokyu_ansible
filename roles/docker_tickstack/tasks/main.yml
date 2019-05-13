@@ -1,0 +1,191 @@
+---
+
+- name: "docker prune"
+  become: true
+  shell: "docker container prune -f"
+  when: "'managers' in group_names"
+
+- name: "Create directory to Traefik"
+  become: true
+  file:
+    name: /srv/traefik
+    state: directory
+    owner: root
+    group: root
+    mode: 0740
+  when: "'managers' in group_names"
+
+- name: "Create directory to Traefik/conf"
+  become: true
+  file:
+    name: /srv/traefik/conf
+    state: directory
+    owner: root
+    group: root
+    mode: 0740
+  when: "'managers' in group_names"
+
+
+- name: "copy docker-compose to manager"
+  become: true
+  copy:
+    force: yes
+    src: docker-compose_traefik.yml
+    dest: /srv/traefik/docker-compose.yml
+  when: "'managers' in group_names "
+
+- name: "copy traefik.toml to manager"
+  become: true
+  copy:
+    force: yes
+    src: traefik.toml
+    dest: /srv/traefik/conf/
+  when: "'managers' in group_names "
+
+- name: "Create directory to Traefik"
+  become: true
+  file:
+    name: /srv/traefik/conf/acme.json
+    state: touch
+    owner: root
+    group: root
+    mode: 0600
+  when: "'managers' in group_names"
+
+- name: "lauch docker-compose"
+  become: true
+  shell: "docker stack deploy -c /srv/traefik/docker-compose.yml trafik"
+  when: "'managers' in group_names "
+
+
+
+- name: "Prune"
+  become: true
+  shell: "docker image prune -f"
+  when: "'managers' in group_names "
+
+############### CREATE TICK STACK #################
+
+- name: "Create Folder To Tick Stack"
+  become: true
+  file:
+    name: /srv/tickstack
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+  when: "'managers' in group_names"
+
+- name: "GIT Clone The Repository"
+  become: true
+  git:
+    repo: https://github.com/influxdata/influxdata-docker.git
+    dest: /srv/tickstack/
+    update: no
+  when: "'managers' in group_names"
+
+  ### TELEGRAPH ###
+
+#- name: "Build Image Telegraph"
+#  become: true
+#  shell: "docker build -f /srv/tickstack/telegraf/1.10/alpine/Dockerfile ."
+#  when: "'managers' in group_names"
+
+#### TELEGRAF ####
+- name: "Build Image Telegraf"
+  become: true
+  shell: "docker build -t telegraf /srv/tickstack/telegraf/1.10/alpine/"
+  when: "'managers' in group_names"
+
+- name: "Tag Image Telegraf"
+  become: true
+  shell: "docker image tag telegraf 172.16.237.52:5000/mytelegraf"
+  when: "'managers' in group_names"
+
+- name: "Push Docker Image Telegraf To Private Registry"
+  become: true
+  shell: "docker push 172.16.237.52:5000/mytelegraf"
+  when: "'managers' in group_names"
+  ignore_errors: true
+
+
+- name: "Remove Image Telegraf"
+  become: true
+  shell: "docker image remove telegraf"
+  when: "'managers' in group_names"
+
+#####################
+
+
+#### InfluxDB ####
+ #- name: "Build And Tag Image InfluxDB"
+#  become: true
+#  shell: "docker build --tag=172.16.237.52:5000/myinfluxdb -f /srv/tickstack/influxdb/1.7/alpine/Dockerfile ."
+#  when: "'managers' in group_names"
+#  ignore_errors: true
+
+#- name: "Push Docker Image Telegraf To Private Registry"
+#  become: true
+#  shell: "docker push 172.16.237.52:5000/myinfluxdb"
+#  when: "'managers' in group_names"
+#  ignore_errors: true
+#####################
+
+#- name: "docker prout"
+#  become: true
+#  docker_image:
+#    path: /srv/tickstack/influxdb/1.7/alpine/
+#    name: myinflux
+#  when: "'managers' in group_names"
+
+
+
+
+
+
+####################################################
+
+- name: "Create directory to API"
+  become: true
+  file:
+    name: /srv/api/
+    state: directory
+    owner: root
+    group: root
+    mode: 0740
+  when: "'managers' in group_names"
+
+- name: "copy Dockerfile to manager"
+  become: true
+  copy:
+    force: yes
+    src: Dockerfile_api
+    dest: /srv/api/Dockerfile
+  when: "'managers' in group_names "
+
+- name: "copy dock-compose_api to manager"
+  become: true
+  copy:
+    force: yes
+    src: docker-compose_api
+    dest: /srv/api/docker-compose.yml
+  when: "'managers' in group_names "
+
+- name: "copy entrypoint.sh to manager"
+  become: true
+  copy:
+    force: yes
+    src: entrypoint.sh
+    dest: /srv/api/entrypoint.sh
+  when: "'managers' in group_names "
+
+
+
+#- name: "Clone du dépôt /api"
+#  become: true
+#  git:
+#    repo: http://172.16.237.155/etna/api_gateway.git
+#    dest: /srv/api/
+#    update: yes
+#    clone: yes
+#    accept_hostkey: yes

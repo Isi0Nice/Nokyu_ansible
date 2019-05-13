@@ -1,0 +1,48 @@
+---
+#- name: "Include some gitlab vars"
+#  include_vars: debian.yml
+
+- name: "Install python apt"
+  become: true
+  apt:
+    name: "python-apt"
+    state: present
+
+- name: "Get Gitlab script install"
+  become: true
+  get_url:
+    url: "{{ gitlab_repo_url }}"
+    dest: "{{ temp_dest }}"
+
+- name: "Run gitlab bash script"
+  become: true
+  command: bash "{{ temp_dest }}"
+
+- name: "Verify that gitlab source is here"
+  become: true
+  stat:
+    path: "{{ source_list }}"
+  register: p
+- debug:
+    msg: "Gitlab source not found"
+  when: p.stat.exists == False
+
+- name: "Install gitlab package"
+  become: true
+  apt:
+    name: "{{ gitlab_pkg }}"
+    state: present
+
+- name: "Copy gitlab.rb to remote machine"
+  become: true
+  copy:
+    src: ../files/gitlab.rb
+    dest: /etc/gitlab/gitlab.rb
+    owner: root
+    group: root
+    mode: 700
+
+- name: "Reconfigure gitlab"
+  become: true
+  command: gitlab-ctl reconfigure
+  failed_when: false
