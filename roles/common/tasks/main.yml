@@ -1,32 +1,32 @@
 ---
-
-- name: disable sources list
-  become: true
-  lineinfile:
-        dest=/etc/apt/sources.list
-        regexp='^deb http://ftp.fr.debian.org/debian/ jessie-updates main'
-        line="#deb http://ftp.fr.debian.org/debian/ jessie-updates main"
-        state=absent
-        backup=yes
-
-- name: disable sources list
-  become: true
-  lineinfile:
-        dest=/etc/apt/sources.list
-        regexp='^deb-src http://ftp.fr.debian.org/debian/ jessie-updates main'
-        line="#deb-src http://ftp.fr.debian.org/debian/ jessie-updates main"
-        state=present
-        backup=yes
-
-- name: 'ensure server is up to date'
+- name: Ensure server is up to date
   become: true
   apt:
            update_cache: yes
            #upgrade: full
 
-- name: 'install VIM'
+- name: Install VIM
   become: true
   apt:
            name: vim
            update_cache: yes
            state: latest
+
+#### Copy ssh conf file ####
+
+- name: Copy sshd_config to vm
+  become: true
+  copy:
+    src: sshd_config
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Reload ssh service
+  become: true
+  service:
+    name: ssh
+    state: reloaded
+
+##############################
